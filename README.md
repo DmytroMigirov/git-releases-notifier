@@ -1,4 +1,3 @@
-# git-releases-tg-notifier
 # GitHub Release Notifier 🚀
 
 GitHub Release Notifier is a simple Python script that monitors GitHub repositories for new releases and sends notifications to a Telegram chat. Perfect for staying updated on your favorite projects! 🌟
@@ -13,6 +12,8 @@ GitHub Release Notifier is a simple Python script that monitors GitHub repositor
 - Python 3.7 or higher
 - Telegram Bot Token and Chat ID
 - (Optional) GitHub Token for higher API rate limits (recommended for frequent checks)
+
+<hr></hr>
 
 ## Setup
 
@@ -36,6 +37,9 @@ GITHUB_TOKEN=your_github_token
 CHECK_INTERVAL=300
 REPOSITORIES=owner/repo,owner/repo2
 ```
+<hr></hr>
+
+## Running Locally
 
 ### 3. Install dependencies
 Install the required Python libraries:
@@ -48,8 +52,9 @@ Start the script using Python:
 ```bash
 python github_multi_repo_release_notifier.py
 ```
+<hr></hr>
 
-## Using Docker
+## Running using Docker
 
 ### Build the Docker image
 ```bash
@@ -78,9 +83,6 @@ docker run -d --restart always --name release-notifier --env-file .env github-re
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Contributing
-Contributions are welcome! Feel free to open issues or submit pull requests.
 
 ## Acknowledgments
 - GitHub API
