@@ -84,14 +84,31 @@ def send_slack_message(message):
     else:
         logging.error(f"Error sending message to Slack: {response.status_code}")
 
-def notify(message):
+def notify(repo, release_name, release_tag, release_url):
     """
-    Send a notification to the configured channels.
+    Send a notification to the configured channels with appropriate formatting.
     """
     if "telegram" in NOTIFICATION_CHANNELS:
-        send_telegram_message(message)
+        telegram_message = (
+            f"🚀 *New Release Alert!* 🛠️\n\n"
+            f"📦 Repository: `{repo}`\n"
+            f"🏷️ Name: *{release_name}*\n"
+            f"🔖 Tag: `{release_tag}`\n"
+            f"🔗 [View Release]({release_url})\n\n"
+            f"Stay tuned for updates! 🌟"
+        )
+        send_telegram_message(telegram_message)
+
     if "slack" in NOTIFICATION_CHANNELS:
-        send_slack_message(message)
+        slack_message = (
+            f"🚀 *New Release Alert!* 🛠️\n\n"
+            f"📦 Repository: `{repo}`\n"
+            f"🏷️ Name: *{release_name}*\n"
+            f"🔖 Tag: `{release_tag}`\n"
+            f"🔗 <{release_url}|View Release>\n\n"
+            f"Stay tuned for updates! 🌟"
+        )
+        send_slack_message(slack_message)
 
 def main():
     """
@@ -111,15 +128,7 @@ def main():
                     release_name = release.get("name", "No name")
                     release_tag = release.get("tag_name", "No tag")
                     release_url = release.get("html_url", "No URL")
-                    message = (
-                        f"🚀 *New Release Alert!* 🛠️\n\n"
-                        f"📦 Repository: `{repo}`\n"
-                        f"🏷️ Name: *{release_name}*\n"
-                        f"🔖 Tag: `{release_tag}`\n"
-                        f"🔗 [View Release]({release_url})\n\n"
-                        f"Stay tuned for updates! 🌟"
-                    )
-                    notify(message)
+                    notify(repo, release_name, release_tag, release_url)
         logging.info(f"Sleeping for {CHECK_INTERVAL} seconds...")
         time.sleep(CHECK_INTERVAL)
 
