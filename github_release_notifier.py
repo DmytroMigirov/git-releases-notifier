@@ -4,12 +4,12 @@ import time
 import logging
 from dotenv import load_dotenv
 
-# Configure logging to file and console
+# Configure logging to console
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.StreamHandler()         # Log to console
+        logging.StreamHandler()  # Log to console
     ]
 )
 
@@ -20,6 +20,8 @@ load_dotenv()
 REPOSITORIES = os.getenv("REPOSITORIES", "").split(",")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL")
+NOTIFICATION_CHANNELS = os.getenv("NOTIFICATION_CHANNELS", "").split(",")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 CHECK_INTERVAL = int(os.getenv("CHECK_INTERVAL", 300))
 
@@ -50,6 +52,10 @@ def send_telegram_message(message):
     """
     Send a message to the configured Telegram chat.
     """
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        logging.error("Telegram configuration is missing.")
+        return
+
     logging.info("Sending message to Telegram...")
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
@@ -62,10 +68,35 @@ def send_telegram_message(message):
     else:
         logging.error(f"Error sending message to Telegram: {response.status_code}")
 
+def send_slack_message(message):
+    """
+    Send a message to the configured Slack channel.
+    """
+    if not SLACK_WEBHOOK_URL:
+        logging.error("Slack Webhook URL is not configured.")
+        return
+
+    logging.info("Sending message to Slack...")
+    payload = {"text": message}
+    response = requests.post(SLACK_WEBHOOK_URL, json=payload)
+    if response.status_code == 200:
+        logging.info("Message successfully sent to Slack.")
+    else:
+        logging.error(f"Error sending message to Slack: {response.status_code}")
+
+def notify(message):
+    """
+    Send a notification to the configured channels.
+    """
+    if "telegram" in NOTIFICATION_CHANNELS:
+        send_telegram_message(message)
+    if "slack" in NOTIFICATION_CHANNELS:
+        send_slack_message(message)
+
 def main():
     """
     Main function to monitor GitHub repositories for new releases
-    and notify via Telegram.
+    and notify via the configured channels.
     """
     logging.info("Starting GitHub release notifier...")
     last_release_ids = {repo: None for repo in REPOSITORIES}
@@ -88,7 +119,7 @@ def main():
                         f"🔗 [View Release]({release_url})\n\n"
                         f"Stay tuned for updates! 🌟"
                     )
-                    send_telegram_message(message)
+                    notify(message)
         logging.info(f"Sleeping for {CHECK_INTERVAL} seconds...")
         time.sleep(CHECK_INTERVAL)
 
